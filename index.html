@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Primary 3 Science Simulations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-top:#EAF6FF;
+    --bg-bottom:#CDEAFB;
+    --ink:#1B2A41;
+    --ink-soft:#52647D;
+    --card-bg:#FFFFFF;
+    --yellow:#FFC93C;
+    --shadow: 0 10px 25px rgba(27,42,65,0.15);
+    --radius: 20px;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+    display:flex;
+    justify-content:center;
+    padding: 40px 16px;
+    font-family:'Nunito', system-ui, sans-serif;
+  }
+  .app{
+    width:100%;
+    max-width: 720px;
+  }
+  h1{
+    font-family:'Baloo 2', system-ui, sans-serif;
+    font-size: clamp(26px, 4vw, 38px);
+    color: var(--ink);
+    text-align:center;
+    margin: 0 0 6px;
+  }
+  .subtitle{
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin: 0 0 32px;
+  }
+  .grid{
+    display:flex;
+    flex-direction:column;
+    gap: 16px;
+  }
+  .card{
+    display:flex;
+    align-items:center;
+    gap: 16px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 22px;
+    text-decoration:none;
+    transition: transform 0.15s ease;
+  }
+  .card:hover{ transform: translateY(-2px); }
+  .card-icon{ font-size: 34px; flex-shrink:0; }
+  .card-text h2{
+    font-family:'Baloo 2', system-ui, sans-serif;
+    font-size: 20px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .card-text p{
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🔬 Primary 3 Science Simulations</h1>
+  <p class="subtitle">Pick a simulation to explore</p>
+  <div class="grid">
+    <a class="card" href="Magnets/index.html.html">
+      <span class="card-icon">🧲</span>
+      <span class="card-text">
+        <h2>Magnetising a Nail</h2>
+        <p>Try the stroking method and watch a nail turn into a magnet.</p>
+      </span>
+    </a>
+  </div>
+</div>
+</body>
+</html>
