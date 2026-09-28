@@ -4,7 +4,7 @@ Interactive browser-based simulations for Primary 3 science topics. Each simulat
 
 ## Simulations
 
-### Magnets — Magnetising a Nail (`Magnets/index.html.html`)
+### Magnets — Magnetising a Nail (`Magnets/magnetisation.html`)
 
 Demonstrates the **stroking method** of magnetising a steel nail with a bar magnet.
 
