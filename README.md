@@ -4,7 +4,7 @@ Interactive browser-based simulations for Primary 3 science topics. Each simulat
 
 ## Simulations
 
-### Magnets — Magnetising a Nail (`Magnets/magnetisation.html`)
+### Magnets — Magnetising a Nail (`Science/Primary-3/Magnets/magnetisation.html`)
 
 Demonstrates the **stroking method** of magnetising a steel nail with a bar magnet.
 
@@ -16,7 +16,7 @@ Demonstrates the **stroking method** of magnetising a steel nail with a bar magn
 - **Quick Test** buttons jump straight to 10, 50, or 100 strokes to skip ahead and see the end states.
 - **Reset** returns the nail and magnet to their starting state.
 
-### Magnet Detective (`Magnets/magnet-detective.html`)
+### Magnet Detective (`Science/Primary-3/Magnets/magnet-detective.html`)
 
 A mystery/quiz game where you use a test magnet to identify three unlabelled bars — each is randomly either a **non-magnetic material**, a **magnetic material**, or a **magnet**.
 
@@ -26,7 +26,7 @@ A mystery/quiz game where you use a test magnet to identify three unlabelled bar
 - Once all six ends are tested, a quiz appears asking you to classify each bar as a magnet, magnetic material, or non-magnetic material, with instant feedback and a score.
 - **New shuffle** / **Play again** randomises the three bars' identities and poles for a fresh round.
 
-### Electromagnet Lab (`Magnets/electromagnet_lab.html`)
+### Electromagnet Lab (`Science/Primary-3/Magnets/electromagnet_lab.html`)
 
 An interactive circuit diagram exploring how an **electromagnet's** strength depends on the number of coils and batteries.
 
