@@ -16,6 +16,16 @@ Demonstrates the **stroking method** of magnetising a steel nail with a bar magn
 - **Quick Test** buttons jump straight to 10, 50, or 100 strokes to skip ahead and see the end states.
 - **Reset** returns the nail and magnet to their starting state.
 
+### Magnet Detective (`Magnets/magnet-detective.html`)
+
+A mystery/quiz game where you use a test magnet to identify three unlabelled bars — each is randomly either a **non-magnetic material**, a **magnetic material**, or a **magnet**.
+
+- Drag the magnet onto each end of Bar A, B, and C to test it: it gets pulled in (attracts), pushed away (repels), or nothing happens.
+- **Flip Magnet** swaps which pole faces outward, so you can test with either pole — but the game reminds you to keep it consistent across both ends of the same bar, just like a real magnet.
+- The behaviour follows real magnetism rules: non-magnetic materials never attract; magnetic materials (like iron) always attract to either pole; a real magnet attracts on one end and repels on the other (like poles repel, unlike poles attract).
+- Once all six ends are tested, a quiz appears asking you to classify each bar as a magnet, magnetic material, or non-magnetic material, with instant feedback and a score.
+- **New shuffle** / **Play again** randomises the three bars' identities and poles for a fresh round.
+
 ## Usage
 
 Open any simulation's `.html` file directly in a web browser — no server or build step required.

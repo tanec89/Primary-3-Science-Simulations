@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Magnet Detective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood-a:#c99a63;
+    --wood-b:#b8874f;
+    --paper:#fbf7ec;
+    --ink:#332c22;
+    --ink-soft:#6b6152;
+    --red:#e2552b;
+    --blue:#2f6f9e;
+    --green:#3f9463;
+    --push:#5b6b7a;
+    --gray:#9c9284;
+    --tape:#f1e3a6;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;overflow-x:hidden;}
+  body{
+    font-family:'Quicksand',sans-serif;
+    color:var(--ink);
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.035) 0 2px, transparent 2px 26px),
+      linear-gradient(180deg, var(--wood-a), var(--wood-b));
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding-bottom:130px;
+  }
+  .app{width:100%; max-width:460px; padding:18px 14px 10px;}
+
+  header{text-align:center; margin-bottom:14px;}
+  header h1{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:1.55rem;
+    margin:0 0 4px;
+    color:#fff;
+    text-shadow:0 2px 0 rgba(0,0,0,0.18);
+  }
+  header p{margin:0; font-size:0.92rem; color:#fff; opacity:0.92; font-weight:600;}
+
+  .topbar{display:flex; justify-content:flex-end; max-width:460px; margin:0 auto 6px;}
+  .reset-btn{
+    background:rgba(255,255,255,0.85); border:none; border-radius:999px;
+    padding:6px 12px; font-family:'Quicksand'; font-weight:700; font-size:0.8rem;
+    color:var(--ink); cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .legend{
+    display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+    background:rgba(255,255,255,0.55); border-radius:12px; padding:7px 10px;
+    font-size:0.75rem; font-weight:700; margin-bottom:16px;
+  }
+  .legend span{display:flex; align-items:center; gap:4px;}
+
+  .bar-card{
+    background:var(--paper);
+    border-radius:14px;
+    padding:16px 14px 12px;
+    margin-bottom:22px;
+    position:relative;
+    box-shadow:0 6px 14px rgba(0,0,0,0.22);
+  }
+  .bar-card:nth-child(odd){transform:rotate(-0.6deg);}
+  .bar-card:nth-child(even){transform:rotate(0.6deg);}
+  .tape{
+    position:absolute; top:-10px; left:50%; transform:translateX(-50%) rotate(-3deg);
+    width:70px; height:22px; background:var(--tape); opacity:0.85;
+    box-shadow:0 2px 3px rgba(0,0,0,0.15);
+  }
+  .bar-label{
+    font-family:'Baloo 2'; font-weight:700; font-size:1.05rem;
+    text-align:center; margin-bottom:10px;
+  }
+  .bar-track{
+    position:relative; height:74px; display:flex; align-items:center; justify-content:center;
+  }
+  .bar-visual{
+    width:64%; height:34px; border-radius:10px;
+    background:linear-gradient(180deg,#d8d3c8,#a8a196);
+    box-shadow:inset 0 2px 3px rgba(255,255,255,0.6), inset 0 -3px 4px rgba(0,0,0,0.2);
+    transition:transform .28s ease;
+  }
+  .zone{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:66px; height:56px; border-radius:12px;
+    border:2.5px dashed rgba(51,44,34,0.35);
+    display:flex; align-items:center; justify-content:center;
+    transition:border-color .15s, background .15s;
+  }
+  .zone.left{left:0;}
+  .zone.right{right:0;}
+  .zone.zone-hover{border-color:var(--ink-soft); border-style:solid; background:rgba(0,0,0,0.05);}
+  .zone .icon{font-size:0.68rem; font-weight:800; color:var(--ink-soft); text-align:center; line-height:1.1; padding:0 3px;}
+  .zone .icon.icon-attract{color:#2b6944;}
+  .zone .icon.icon-repel{color:var(--push);}
+  .zone .icon.icon-none{font-size:0.56rem;}
+
+  .summary{
+    margin-top:10px; text-align:center; font-weight:700; font-size:0.86rem;
+    padding:7px 8px; border-radius:9px; background:rgba(0,0,0,0.05); color:var(--ink-soft);
+  }
+  .summary.nonmagnetic{background:rgba(156,146,132,0.25); color:var(--ink);}
+  .summary.magnetic{background:rgba(63,148,99,0.2); color:#2b6944;}
+  .summary.magnet{background:rgba(91,107,122,0.2); color:#3d4a56;}
+
+  /* Quiz */
+  #quizPrompt{text-align:center; margin:6px 0 20px;}
+  #quizPrompt button{
+    font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
+    background:var(--green); color:#fff; border:none; border-radius:999px;
+    padding:11px 20px; box-shadow:0 4px 10px rgba(0,0,0,0.25); cursor:pointer;
+  }
+  #quizSection{display:none;}
+  .quiz-card{
+    background:var(--paper); border-radius:14px; padding:14px; margin-bottom:14px;
+    box-shadow:0 6px 14px rgba(0,0,0,0.2);
+  }
+  .quiz-card h3{font-family:'Baloo 2'; margin:0 0 8px; font-size:1rem;}
+  .choices{display:flex; flex-direction:column; gap:7px;}
+  .choice-btn{
+    font-family:'Quicksand'; font-weight:700; font-size:0.85rem;
+    padding:9px 10px; border-radius:9px; border:2px solid #d9d2c2;
+    background:#fff; color:var(--ink); text-align:left; cursor:pointer;
+  }
+  .choice-btn.selected{border-color:var(--blue); background:rgba(47,111,158,0.12);}
+  .feedback{margin-top:8px; font-weight:700; font-size:0.85rem; display:none;}
+  .feedback.correct{color:var(--green); display:block;}
+  .feedback.wrong{color:var(--red); display:block;}
+
+  #checkBtn, #playAgainBtn{
+    display:block; margin:0 auto 8px; font-family:'Baloo 2'; font-weight:700; font-size:0.95rem;
+    background:var(--blue); color:#fff; border:none; border-radius:999px;
+    padding:11px 22px; box-shadow:0 4px 10px rgba(0,0,0,0.25); cursor:pointer;
+  }
+  #playAgainBtn{background:var(--push); display:none;}
+  #scoreBanner{
+    text-align:center; font-family:'Baloo 2'; font-weight:700; font-size:1.05rem;
+    margin:10px 0; display:none;
+  }
+
+  /* Tray + magnet */
+  #tray{
+    position:fixed; bottom:0; left:0; right:0; height:110px;
+    background:linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.22));
+    border-top:3px solid rgba(0,0,0,0.25);
+    display:flex; align-items:center; justify-content:center;
+  }
+  #tray .tray-label{
+    position:absolute; top:8px; left:50%; transform:translateX(-50%);
+    font-size:0.72rem; font-weight:700; color:#fff; opacity:0.85;
+  }
+  #magnet{
+    position:fixed; width:92px; height:42px; display:flex; border-radius:8px;
+    box-shadow:0 5px 10px rgba(0,0,0,0.35); cursor:grab; z-index:50; touch-action:none;
+  }
+  #magnet.dragging{cursor:grabbing; box-shadow:0 10px 18px rgba(0,0,0,0.4); transform:scale(1.05);}
+  #magnet.flipped{flex-direction:row-reverse;}
+  #magnet .half{flex:1; display:flex; align-items:center; justify-content:center; font-family:'Baloo 2'; font-weight:800; color:#fff; font-size:0.95rem;}
+  #magnet .half.n{background:var(--red); border-radius:8px 0 0 8px;}
+  #magnet .half.s{background:var(--blue); border-radius:0 8px 8px 0;}
+  #magnet.flipped .half.n{border-radius:0 8px 8px 0;}
+  #magnet.flipped .half.s{border-radius:8px 0 0 8px;}
+
+  #flipBtn{
+    position:fixed; bottom:118px; left:50%; transform:translateX(-50%);
+    font-family:'Quicksand'; font-weight:700; font-size:0.8rem;
+    background:#fff; color:var(--ink); border:2px solid rgba(0,0,0,0.2); border-radius:999px;
+    padding:6px 14px; z-index:55; cursor:pointer; box-shadow:0 3px 6px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><button class="reset-btn" id="resetTop">🔄 New shuffle</button></div>
+  <header>
+    <h1>🧲 Magnet Detective</h1>
+    <p>Drag the magnet to test each end of Bar A, B and C! If it sticks, drag it away to test the next spot.</p>
+    <p style="font-size:0.78rem; opacity:0.85; margin-top:4px;">Tip: use "Flip magnet" to test with the other pole — but keep it the same for both ends of one bar, just like in real life!</p>
+  </header>
+
+  <div class="legend">
+    <span>Pulled in = attracts</span>
+    <span>Pushed away = repels</span>
+    <span>No observable change = nothing</span>
+  </div>
+
+  <div id="bars"></div>
+
+  <div id="quizPrompt" style="display:none;">
+    <button id="showQuizBtn">🔍 I've tested them all — let's guess!</button>
+  </div>
+
+  <div id="quizSection">
+    <div id="quizCards"></div>
+    <button id="checkBtn">✅ Check my answers</button>
+    <div id="scoreBanner"></div>
+    <button id="playAgainBtn">🔄 Play again</button>
+  </div>
+</div>
+
+<button id="flipBtn">⟲ Flip magnet</button>
+<div id="tray"><span class="tray-label">MAGNET — drag me up!</span></div>
+<div id="magnet"><div class="half n">N</div><div class="half s">S</div></div>
+
+<script>
+const barIds = ['A','B','C'];
+const typeLabel = {
+  nonmagnetic: 'Non-magnetic material',
+  magnetic: 'Magnetic material',
+  magnet: 'Magnet'
+};
+let bars = {};
+let quizAnswers = {};
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function buildBarsDOM(){
+  const container = document.getElementById('bars');
+  container.innerHTML = '';
+  barIds.forEach(id=>{
+    const card = document.createElement('div');
+    card.className = 'bar-card';
+    card.innerHTML = `
+      <div class="tape"></div>
+      <div class="bar-label">Bar ${id}</div>
+      <div class="bar-track">
+        <div class="bar-visual" id="visual-${id}"></div>
+        <div class="zone left" data-bar-id="${id}" data-end="left"><span class="icon" id="icon-${id}-left">?</span></div>
+        <div class="zone right" data-bar-id="${id}" data-end="right"><span class="icon" id="icon-${id}-right">?</span></div>
+      </div>
+      <div class="summary" id="summary-${id}">Test both ends to find out!</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function buildQuizDOM(){
+  const container = document.getElementById('quizCards');
+  container.innerHTML = '';
+  barIds.forEach(id=>{
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <h3>Bar ${id} — what is it?</h3>
+      <div class="choices" data-quiz="${id}">
+        <button class="choice-btn" data-value="nonmagnetic">Non-magnetic material</button>
+        <button class="choice-btn" data-value="magnetic">Magnetic material</button>
+        <button class="choice-btn" data-value="magnet">Magnet</button>
+      </div>
+      <div class="feedback" id="feedback-${id}"></div>
+    `;
+    container.appendChild(card);
+  });
+  container.querySelectorAll('.choice-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const group = btn.closest('.choices');
+      const barId = group.dataset.quiz;
+      group.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      quizAnswers[barId] = btn.dataset.value;
+    });
+  });
+}
+
+function initGame(){
+  const types = shuffle(['nonmagnetic','magnetic','magnet']);
+  barIds.forEach((id,i)=>{
+    const type = types[i];
+    let poles = null;
+    if(type==='magnet'){
+      const leftPole = Math.random()<0.5 ? 'N' : 'S';
+      poles = { left:leftPole, right: leftPole==='N' ? 'S' : 'N' };
+    }
+    bars[id] = { type, poles, tested:{left:null, right:null} };
+  });
+  quizAnswers = {};
+  stuckBar = null;
+  buildBarsDOM();
+  buildQuizDOM();
+  document.getElementById('quizPrompt').style.display = 'none';
+  document.getElementById('quizSection').style.display = 'none';
+  document.getElementById('checkBtn').style.display = 'inline-block';
+  document.getElementById('playAgainBtn').style.display = 'none';
+  document.getElementById('scoreBanner').style.display = 'none';
+  document.getElementById('scoreBanner').textContent = '';
+  computeHome();
+  setMagnetPos(homeX, homeY);
+}
+
+function getPresentedPole(end){
+  // The magnet's own left/right sides swap when flipped. Whichever pole currently
+  // sits on the side facing the bar end being tested is the one presented —
+  // deliberate and controllable, not left to imprecise drop-pixel geometry.
+  const leftPole = magnetFlipped ? 'S' : 'N';
+  const rightPole = magnetFlipped ? 'N' : 'S';
+  return end === 'left' ? leftPole : rightPole;
+}
+
+function updateZoneIcon(barId, end, val){
+  const el = document.getElementById(`icon-${barId}-${end}`);
+  el.classList.remove('icon-attract','icon-repel','icon-none');
+  if(val==='attract'){
+    el.textContent = 'Pulled in';
+    el.classList.add('icon-attract');
+  } else if(val==='repel'){
+    el.textContent = 'Pushed away';
+    el.classList.add('icon-repel');
+  } else {
+    el.textContent = 'No observable change';
+    el.classList.add('icon-none');
+  }
+}
+
+function updateSummary(barId){
+  const t = bars[barId].tested;
+  const el = document.getElementById(`summary-${barId}`);
+  el.classList.remove('nonmagnetic','magnetic','magnet');
+  if(t.left===null || t.right===null){
+    el.textContent = 'Test both ends to find out!';
+    return;
+  }
+  if(t.left==='none' && t.right==='none'){
+    el.textContent = 'Does not attract to magnet';
+    el.classList.add('nonmagnetic');
+  } else if(t.left==='attract' && t.right==='attract'){
+    el.textContent = 'Attracts to magnet on both ends';
+    el.classList.add('magnetic');
+  } else {
+    el.textContent = 'Attracts on one side, repels on the other side';
+    el.classList.add('magnet');
+  }
+}
+
+function checkReadyForQuiz(){
+  const allDone = barIds.every(id => bars[id].tested.left!==null && bars[id].tested.right!==null);
+  document.getElementById('quizPrompt').style.display = allDone ? 'block' : 'none';
+}
+
+/* ---------- Drag logic ---------- */
+const magnet = document.getElementById('magnet');
+let dragging = false, offsetX = 0, offsetY = 0, homeX = 0, homeY = 0;
+let stuckBar = null;
+let magnetFlipped = false;
+
+function computeHome(){
+  const trayRect = document.getElementById('tray').getBoundingClientRect();
+  homeX = trayRect.left + trayRect.width/2 - magnet.offsetWidth/2;
+  homeY = trayRect.top + trayRect.height/2 - magnet.offsetHeight/2 - 4;
+}
+function setMagnetPos(x,y){
+  magnet.style.left = x+'px';
+  magnet.style.top = y+'px';
+}
+window.addEventListener('resize', computeHome);
+
+function allZones(){ return Array.from(document.querySelectorAll('.zone')); }
+
+function findZoneAt(cx,cy){
+  const margin = 22;
+  for(const z of allZones()){
+    const r = z.getBoundingClientRect();
+    if(cx >= r.left-margin && cx <= r.right+margin && cy >= r.top-margin && cy <= r.bottom+margin){
+      return z;
+    }
+  }
+  return null;
+}
+
+function clearZoneHighlights(){
+  allZones().forEach(z=>z.classList.remove('zone-hover'));
+}
+
+magnet.addEventListener('pointerdown',(e)=>{
+  dragging = true;
+  magnet.setPointerCapture(e.pointerId);
+  const rect = magnet.getBoundingClientRect();
+  offsetX = e.clientX - rect.left;
+  offsetY = e.clientY - rect.top;
+  magnet.classList.add('dragging');
+  magnet.style.transition = '';
+  if(stuckBar){
+    const prevVisual = document.getElementById(`visual-${stuckBar.barId}`);
+    if(prevVisual) prevVisual.style.transform = 'translateX(0)';
+    stuckBar = null;
+  }
+});
+
+magnet.addEventListener('pointermove',(e)=>{
+  if(!dragging) return;
+  const x = e.clientX - offsetX;
+  const y = e.clientY - offsetY;
+  setMagnetPos(x,y);
+  const cx = x + magnet.offsetWidth/2;
+  const cy = y + magnet.offsetHeight/2;
+  clearZoneHighlights();
+  const hover = findZoneAt(cx,cy);
+  if(hover) hover.classList.add('zone-hover');
+});
+
+function returnHome(bouncy){
+  magnet.style.transition = bouncy
+    ? 'left .5s cubic-bezier(.34,1.9,.64,1), top .5s cubic-bezier(.34,1.9,.64,1)'
+    : 'left .3s ease, top .3s ease';
+  setMagnetPos(homeX, homeY);
+  setTimeout(()=>{ magnet.style.transition=''; }, 550);
+}
+
+function performTest(zoneEl){
+  const barId = zoneEl.dataset.barId;
+  const end = zoneEl.dataset.end;
+
+  const dropRect = magnet.getBoundingClientRect();
+  const dropCX = dropRect.left + dropRect.width/2;
+  const dropCY = dropRect.top + dropRect.height/2;
+
+  const r = zoneEl.getBoundingClientRect();
+  const zx = r.left + r.width/2;
+  const zy = r.top + r.height/2;
+
+  let val;
+  const bar = bars[barId];
+  if(bar.type === 'nonmagnetic'){
+    val = 'none';
+  } else if(bar.type === 'magnetic'){
+    val = 'attract';
+  } else {
+    // Real magnet: figure out which coloured end of the test magnet is actually
+    // facing the bar, then apply like-poles-repel / unlike-poles-attract.
+    const presentedPole = getPresentedPole(end);
+    const barEndPole = bar.poles[end];
+    val = (presentedPole === barEndPole) ? 'repel' : 'attract';
+  }
+  bar.tested[end] = val;
+
+  // If a different bar is currently stuck to the magnet, release it first.
+  if(stuckBar && !(stuckBar.barId === barId && stuckBar.end === end)){
+    const prevVisual = document.getElementById(`visual-${stuckBar.barId}`);
+    if(prevVisual) prevVisual.style.transform = 'translateX(0)';
+    stuckBar = null;
+  }
+
+  const visualEl = document.getElementById(`visual-${barId}`);
+  const shiftAmount = 14;
+  const towardDir = end === 'left' ? -1 : 1;
+
+  if(val === 'attract'){
+    // The magnet is pulled all the way in and stays put — the bar leans toward it too.
+    magnet.style.transition = 'left .3s ease-in, top .3s ease-in';
+    setMagnetPos(zx - magnet.offsetWidth/2, zy - magnet.offsetHeight/2);
+    visualEl.style.transform = `translateX(${towardDir*shiftAmount}px)`;
+    stuckBar = { barId, end };
+  } else if(val === 'repel'){
+    // An invisible force stops the magnet short and pushes it back — the bar recoils away too.
+    let dx = dropCX - zx, dy = dropCY - zy;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const standoff = 46;
+    const ux = dx/dist, uy = dy/dist;
+    const stopX = zx + ux*standoff - magnet.offsetWidth/2;
+    const stopY = zy + uy*standoff - magnet.offsetHeight/2;
+    magnet.style.transition = 'left .1s ease-out, top .1s ease-out';
+    setMagnetPos(stopX, stopY);
+    visualEl.style.transform = `translateX(${-towardDir*shiftAmount}px)`;
+    setTimeout(()=>{
+      visualEl.style.transform = 'translateX(0)';
+      returnHome(true);
+    }, 140);
+  } else {
+    // Nothing happens — it just sits exactly where it was dropped for a moment.
+    setTimeout(()=>{ returnHome(false); }, 650);
+  }
+
+  updateZoneIcon(barId, end, val);
+  updateSummary(barId);
+  checkReadyForQuiz();
+}
+
+magnet.addEventListener('pointerup',(e)=>{
+  if(!dragging) return;
+  dragging = false;
+  magnet.classList.remove('dragging');
+  clearZoneHighlights();
+  const rect = magnet.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  const zone = findZoneAt(cx,cy);
+  if(zone){
+    performTest(zone);
+  } else {
+    returnHome(false);
+  }
+});
+magnet.addEventListener('pointercancel', ()=>{
+  if(!dragging) return;
+  dragging = false;
+  magnet.classList.remove('dragging');
+  clearZoneHighlights();
+  returnHome(false);
+});
+
+/* Click-to-test fallback (accessible / non-drag alternative) */
+document.addEventListener('click', (e)=>{
+  const zone = e.target.closest('.zone');
+  if(zone && !dragging) performTest(zone);
+});
+
+/* ---------- Quiz ---------- */
+document.getElementById('showQuizBtn').addEventListener('click', ()=>{
+  document.getElementById('quizSection').style.display = 'block';
+  document.getElementById('quizSection').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+document.getElementById('checkBtn').addEventListener('click', ()=>{
+  let score = 0;
+  barIds.forEach(id=>{
+    const correct = bars[id].type;
+    const chosen = quizAnswers[id];
+    const fb = document.getElementById(`feedback-${id}`);
+    fb.classList.remove('correct','wrong');
+    if(chosen === correct){
+      score++;
+      fb.textContent = '✅ Correct!';
+      fb.classList.add('correct');
+    } else {
+      fb.textContent = `❌ Not quite — Bar ${id} was ${typeLabel[correct]}.`;
+      fb.classList.add('wrong');
+    }
+  });
+  const banner = document.getElementById('scoreBanner');
+  banner.style.display = 'block';
+  banner.textContent = `You got ${score}/3! ${score===3 ? '🌟 Super Science Detective!' : 'Nice try — have another look above.'}`;
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('playAgainBtn').style.display = 'block';
+});
+
+document.getElementById('playAgainBtn').addEventListener('click', initGame);
+document.getElementById('resetTop').addEventListener('click', initGame);
+
+document.getElementById('flipBtn').addEventListener('click', ()=>{
+  magnetFlipped = !magnetFlipped;
+  magnet.classList.toggle('flipped');
+  if(stuckBar){
+    const prevVisual = document.getElementById(`visual-${stuckBar.barId}`);
+    if(prevVisual) prevVisual.style.transform = 'translateX(0)';
+    stuckBar = null;
+    returnHome(false);
+  }
+});
+
+initGame();
+</script>
+</body>
+</html>
