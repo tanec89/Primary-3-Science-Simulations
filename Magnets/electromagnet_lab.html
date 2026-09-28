@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electromagnet Lab — Making a Magnet by Electrical Method</title>
+<style>
+  :root{
+    --bg:#FAF7F0;
+    --panel-bg:#FFFFFF;
+    --ink:#22303F;
+    --ink-soft:#5B6B78;
+    --coil-copper:#C1793D;
+    --coil-copper-dark:#8F5A28;
+    --slider-gray:#8B96A1;
+    --slider-gray-dark:#6B7684;
+    --battery-green:#2FA84F;
+    --battery-green-dark:#1D7C3A;
+    --switch-brass:#C9A227;
+    --table-blue-bg:#E7F2FB;
+    --table-blue-border:#B9D8EC;
+    --clip-steel:#AEB7C0;
+    --success-bg:#E7F6EA; --success-border:#3FA34D; --success-text:#1F6B34;
+    --warn-bg:#FFF6E3;    --warn-border:#E0A100;   --warn-text:#8A6100;
+    --info-bg:#EAF1FB;    --info-border:#6B98D4;   --info-text:#2A4C78;
+    --radius:0.9em;
+    --font-display:'Trebuchet MS','Segoe UI',sans-serif;
+    --font-body:'Segoe UI',Verdana,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{ font-size:16px; }
+  body{
+    margin:0; padding:1.25em; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body);
+  }
+  .app{ max-width:1200px; margin:0 auto; width:100%; }
+  h1{
+    font-family:var(--font-display); font-size:1.7rem; margin:0 0 0.25em 0;
+    display:flex; align-items:center; gap:0.5em;
+  }
+  .subtitle{ color:var(--ink-soft); margin:0 0 1em 0; font-size:0.98rem;}
+
+  .panel{
+    background:var(--panel-bg); border-radius:var(--radius);
+    box-shadow:0 1px 3px rgba(0,0,0,0.08); overflow:hidden; margin-bottom:0.9em;
+  }
+
+  .controls-row{ display:flex; flex-wrap:wrap; }
+  .slider-panel{
+    flex:1 1 300px; padding:0.9em 1.25em; display:flex; align-items:center; gap:0.9em;
+    color:#fff; font-family:var(--font-display); font-size:1.05rem;
+  }
+  .slider-panel.coils{ background:linear-gradient(135deg,var(--slider-gray),var(--slider-gray-dark)); }
+  .slider-panel.batteries{ background:linear-gradient(135deg,var(--battery-green),var(--battery-green-dark)); }
+  .slider-panel label{ white-space:nowrap; font-weight:bold; }
+  .slider-panel input[type=range]{ flex:1; accent-color:#ffffff; height:6px; cursor:pointer; }
+  .slider-panel input[type=range]:disabled{ opacity:0.55; cursor:not-allowed; }
+  .slider-value{ min-width:1.75em; text-align:center; font-weight:bold; font-size:1.2rem; }
+
+  .buttons-row{
+    display:flex; flex-wrap:wrap; align-items:center; gap:0.65em;
+    padding:0.75em 1.1em; background:#EFF3F6;
+  }
+  button{
+    font-family:var(--font-body); font-size:0.95rem; font-weight:600;
+    padding:0.55em 1em; border-radius:0.65em; border:1px solid #C9D2D9;
+    background:#fff; color:var(--ink); cursor:pointer; transition:transform .08s ease, box-shadow .15s ease;
+  }
+  button:hover{ box-shadow:0 2px 6px rgba(0,0,0,0.12); }
+  button:active{ transform:translateY(1px); }
+  button:focus-visible, input:focus-visible, .switch-hit:focus-visible{
+    outline:3px solid #2A6FE0; outline-offset:2px;
+  }
+  .logger-toggle{ display:flex; align-items:center; gap:0.4em; font-weight:600; margin-left:auto; }
+  .logger-toggle input{ width:1.1em; height:1.1em; accent-color:#2A6FE0; }
+
+  .message{
+    padding:0.7em 1.1em; font-weight:600; border-left:6px solid var(--info-border);
+    background:var(--info-bg); color:var(--info-text); font-size:0.98rem;
+  }
+  .message.success{ background:var(--success-bg); border-color:var(--success-border); color:var(--success-text); }
+  .message.warn{ background:var(--warn-bg); border-color:var(--warn-border); color:var(--warn-text); }
+
+  .main-row{ display:flex; flex-wrap:wrap; gap:0.9em; align-items:flex-start; }
+  .canvas-wrap{ flex:2 1 560px; padding:0.6em; position:relative; }
+  svg#circuit{ width:100%; height:auto; display:block; }
+
+  .wire{ fill:none; stroke:var(--ink); stroke-width:5; stroke-linecap:round; stroke-linejoin:round; }
+  .coil-wire{ fill:none; stroke:var(--coil-copper-dark); stroke-width:5; stroke-linecap:round; }
+  .coil-loop{ fill:none; stroke:var(--coil-copper); stroke-width:6; }
+  .rod{ fill:url(#rodGradient); stroke:#4B5560; stroke-width:2; }
+
+  .battery-body{ fill:#1E2A33; stroke:#0E1620; stroke-width:2; }
+  .battery-bar{ fill:var(--battery-green); }
+  .battery-nub{ fill:#1E2A33; }
+
+
+  .clip-outer, .clip-inner{ fill:none; stroke:var(--clip-steel); stroke-width:3.2; }
+  .clip{ opacity:0; transform:translateY(-10px); transition:opacity .3s ease, transform .3s ease; }
+  .clip.attached{ opacity:1; transform:translateY(0); }
+
+  .tray-clip-outer,.tray-clip-inner{ fill:none; stroke:var(--clip-steel); stroke-width:2.6; }
+  .tray-box{ fill:#FBE9CF; stroke:#D9A85B; stroke-width:2.5; }
+
+  .flow-path{ fill:none; stroke:#FFD34D; stroke-width:3; stroke-dasharray:2 10; opacity:0; stroke-linecap:round; }
+  .flow-path.flowing{ opacity:1; animation:flow 0.9s linear infinite; }
+  @keyframes flow{ to{ stroke-dashoffset:-24; } }
+
+  .diagram-label{ font-size:15px; fill:var(--ink-soft); font-family:var(--font-body); }
+
+  .table-wrap{ flex:1 1 260px; background:var(--table-blue-bg); border:1px solid var(--table-blue-border); border-radius:var(--radius); overflow:hidden; }
+  table{ width:100%; border-collapse:collapse; font-size:0.92rem; }
+  thead th{
+    background:var(--table-blue-bg); border-bottom:2px solid var(--table-blue-border);
+    padding:0.7em 0.5em; font-family:var(--font-display); font-size:0.85rem; line-height:1.25;
+  }
+  tbody td{ text-align:center; padding:0.5em; border-bottom:1px solid var(--table-blue-border); }
+  tbody tr:nth-child(even){ background:rgba(255,255,255,0.45); }
+  .table-scroll{ max-height:26em; overflow-y:auto; }
+
+  @media (max-width:640px){
+    .logger-toggle{ margin-left:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .clip, .flow-path{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🔌 Electromagnet Lab</h1>
+  <p class="subtitle">Investigate how the number of coils and batteries changes the strength of an electromagnet.</p>
+
+  <div class="panel controls-row">
+    <div class="slider-panel coils">
+      <label for="coilsSlider">No. of coils =</label>
+      <span class="slider-value" id="coilsValue">3</span>
+      <input type="range" id="coilsSlider" min="1" max="20" step="1" value="3" aria-label="Number of coils">
+    </div>
+    <div class="slider-panel batteries">
+      <label for="batteriesSlider">No. of batteries =</label>
+      <span class="slider-value" id="batteriesValue">1</span>
+      <input type="range" id="batteriesSlider" min="1" max="10" step="1" value="1" aria-label="Number of batteries">
+    </div>
+  </div>
+
+  <div class="panel buttons-row">
+    <button id="pauseBtn" type="button">Pause ⏸</button>
+    <button id="resetSetupBtn" type="button">↺ Reset Setup</button>
+    <button id="resetTableBtn" type="button">↺ Reset Table</button>
+    <label class="logger-toggle"><input type="checkbox" id="loggerCheckbox" checked> Enable Data Logger</label>
+  </div>
+
+  <div class="panel message info" id="messageBar" aria-live="polite">
+    Adjust the number of coils and batteries below to see the electromagnet's strength change!
+  </div>
+
+  <div class="main-row">
+    <div class="panel canvas-wrap">
+      <svg id="circuit" viewBox="0 0 1000 690" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Electromagnet circuit diagram">
+        <defs>
+          <linearGradient id="rodGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#9BA4AE"/>
+            <stop offset="45%" stop-color="#DCE1E6"/>
+            <stop offset="100%" stop-color="#7C858F"/>
+          </linearGradient>
+        </defs>
+
+        <!-- main circuit wire (ink) -->
+        <path class="wire" d="M900,70 L900,470"/>
+        <path class="wire" d="M900,470 L100,470"/>
+        <path id="topStubLeft" class="wire" d="M100,70 L400,70"/>
+        <path id="topStubRight" class="wire" d="M600,70 L900,70"/>
+
+        <!-- current flow overlay -->
+        <path id="flowPath" class="flow-path" d="M100,70 L900,70 L900,470 L100,470 L100,405 M100,185 L100,70"/>
+
+        <!-- coil leads (copper) -->
+        <path class="coil-wire" d="M100,470 L100,405"/>
+        <path class="coil-wire" d="M100,185 L100,70"/>
+
+        <!-- iron rod -->
+        <rect class="rod" x="78" y="160" width="44" height="280" rx="6"/>
+
+        <!-- coil loops (drawn by JS) -->
+        <g id="coilGroup"></g>
+
+        <!-- batteries (drawn by JS) -->
+        <g id="batteryGroup"></g>
+
+        <!-- hanging paper clips -->
+        <g id="clipGroup"></g>
+
+        <!-- clip tray -->
+        <rect class="tray-box" x="20" y="620" width="260" height="50" rx="10"/>
+        <g transform="translate(45,645)"><rect class="tray-clip-outer" x="-7" y="-14" width="14" height="28" rx="7"/><rect class="tray-clip-inner" x="-3.5" y="-9" width="7" height="18" rx="3.5"/></g>
+        <g transform="translate(75,645)"><rect class="tray-clip-outer" x="-7" y="-14" width="14" height="28" rx="7"/><rect class="tray-clip-inner" x="-3.5" y="-9" width="7" height="18" rx="3.5"/></g>
+        <g transform="translate(105,645)"><rect class="tray-clip-outer" x="-7" y="-14" width="14" height="28" rx="7"/><rect class="tray-clip-inner" x="-3.5" y="-9" width="7" height="18" rx="3.5"/></g>
+        <g transform="translate(135,645)"><rect class="tray-clip-outer" x="-7" y="-14" width="14" height="28" rx="7"/><rect class="tray-clip-inner" x="-3.5" y="-9" width="7" height="18" rx="3.5"/></g>
+        <g transform="translate(165,645)"><rect class="tray-clip-outer" x="-7" y="-14" width="14" height="28" rx="7"/><rect class="tray-clip-inner" x="-3.5" y="-9" width="7" height="18" rx="3.5"/></g>
+        <g transform="translate(195,645)"><rect class="tray-clip-outer" x="-7" y="-14" width="14" height="28" rx="7"/><rect class="tray-clip-inner" x="-3.5" y="-9" width="7" height="18" rx="3.5"/></g>
+        <g transform="translate(225,645)"><rect class="tray-clip-outer" x="-7" y="-14" width="14" height="28" rx="7"/><rect class="tray-clip-inner" x="-3.5" y="-9" width="7" height="18" rx="3.5"/></g>
+
+        <!-- labels -->
+        <text class="diagram-label" x="500" y="30" text-anchor="middle" font-weight="bold">battery</text>
+        <text class="diagram-label" x="180" y="300">iron rod +</text>
+        <text class="diagram-label" x="180" y="322">copper coil</text>
+        <text class="diagram-label" x="150" y="648">paper clips</text>
+      </svg>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>No. of coils</th>
+              <th>No. of batteries</th>
+              <th>No. of paper clips attracted</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  let coils = 3;
+  let batteries = 1;
+  let paused = false;
+
+  const ROD_CX = 100;
+  const WIND_TOP = 185;
+  const WIND_BOTTOM = 405;
+  const MAX_CLIPS = 18;
+
+  let refs = {};
+
+  function computeClips(c, b) {
+    // "Ampere-turns" (turns x current) really is linear in coils and batteries -
+    // that part of the physics is genuine. But the pull on each paper clip is not
+    // a straight read-out of that: the iron core's response is non-linear, and
+    // each extra clip sits a little further from the rod in a weaker part of the
+    // field, so equal increases in coils/batteries give smaller and smaller gains
+    // in clips attracted. We model that with a power curve (exponent < 1) for
+    // each variable rather than a straight line - but unlike a saturating curve,
+    // a power curve never truly flattens: pushing either slider further always
+    // attracts at least a little more, all the way to the top of the range.
+    const coilsPart = 0.95 * Math.pow(c, 0.85);
+    const batteriesPart = 1.3 * Math.pow(b, 0.75);
+    const raw = coilsPart + batteriesPart - 1.9;
+    const clips = Math.round(raw);
+    return Math.max(0, Math.min(MAX_CLIPS, clips));
+  }
+
+  function svgEl(tag, attrs) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  function clearGroup(g) {
+    while (g.firstChild) g.removeChild(g.firstChild);
+  }
+
+  function drawCoil(n) {
+    clearGroup(refs.coilGroup);
+    const height = WIND_BOTTOM - WIND_TOP;
+    const spacing = height / n;
+    for (let i = 0; i < n; i++) {
+      const y = WIND_TOP + spacing * (i + 0.5);
+      refs.coilGroup.appendChild(svgEl("ellipse", {
+        cx: ROD_CX, cy: y.toFixed(1), rx: 32, ry: 10, class: "coil-loop"
+      }));
+    }
+  }
+
+  function drawBatteries(n) {
+    clearGroup(refs.batteryGroup);
+    const gap = 6, cellH = 60;
+    const maxPackWidth = 700; // keep the whole pack (plus stub wires) within x=100..900
+    let cellW = 95;
+    if (n * cellW + (n - 1) * gap > maxPackWidth) {
+      cellW = (maxPackWidth - (n - 1) * gap) / n;
+    }
+    const totalW = n * cellW + (n - 1) * gap;
+    const startX = 500 - totalW / 2;
+    const barPad = cellW * 0.1;
+    const barsAreaW = cellW - 2 * barPad;
+    const barGap = barsAreaW / 4;
+    const barW = barGap * 0.65;
+    for (let i = 0; i < n; i++) {
+      const x = startX + i * (cellW + gap);
+      const cellG = svgEl("g", { class: "battery-cell" });
+      cellG.appendChild(svgEl("rect", { x: x, y: 40, width: cellW, height: cellH, rx: 10, ry: 10, class: "battery-body" }));
+      for (let barI = 0; barI < 4; barI++) {
+        const barX = x + barPad + barI * barGap + (barGap - barW) / 2;
+        cellG.appendChild(svgEl("rect", { x: barX, y: 52, width: barW, height: 36, rx: 3, class: "battery-bar" }));
+      }
+      refs.batteryGroup.appendChild(cellG);
+    }
+    refs.batteryGroup.appendChild(svgEl("rect", { x: startX - 8, y: 58, width: 8, height: 24, rx: 2, class: "battery-nub" }));
+    refs.batteryGroup.appendChild(svgEl("rect", { x: startX + totalW, y: 58, width: 8, height: 24, rx: 2, class: "battery-nub" }));
+    refs.topStubLeft.setAttribute("d", `M100,70 L${startX},70`);
+    refs.topStubRight.setAttribute("d", `M${startX + totalW},70 L900,70`);
+  }
+
+  function drawClipChain(n) {
+    clearGroup(refs.clipGroup);
+    for (let i = 0; i < n; i++) {
+      const y = 452 + i * 8;
+      const g = svgEl("g", { class: "clip", style: `transition-delay:${i * 70}ms` });
+      g.appendChild(svgEl("rect", { x: ROD_CX - 7, y: y - 14, width: 14, height: 28, rx: 7, ry: 7, class: "clip-outer" }));
+      g.appendChild(svgEl("rect", { x: ROD_CX - 3.5, y: y - 9, width: 7, height: 18, rx: 3.5, ry: 3.5, class: "clip-inner" }));
+      refs.clipGroup.appendChild(g);
+      requestAnimationFrame(() => g.classList.add("attached"));
+    }
+  }
+
+  function setMessage(text, tone) {
+    refs.messageBar.textContent = text;
+    refs.messageBar.className = "panel message " + tone;
+  }
+
+  function setFlow(active) {
+    refs.flowPath.classList.toggle("flowing", active);
+  }
+
+  function logTrial(clips, b, c) {
+    if (!refs.loggerCheckbox.checked) return;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${c}</td><td>${b}</td><td>${clips}</td>`;
+    refs.tableBody.appendChild(tr);
+  }
+
+  function updateLive() {
+    const n = computeClips(coils, batteries);
+    drawClipChain(n);
+    const clipWord = n === 1 ? "paper clip" : "paper clips";
+    setMessage(`⚡ The electromagnet is attracting ${n} ${clipWord}.`, n > 0 ? "success" : "info");
+    return n;
+  }
+
+  function onCoilsInput(e) {
+    coils = +e.target.value;
+    refs.coilsValue.textContent = coils;
+    drawCoil(coils);
+    updateLive();
+  }
+
+  function onBatteriesInput(e) {
+    batteries = +e.target.value;
+    refs.batteriesValue.textContent = batteries;
+    drawBatteries(batteries);
+    updateLive();
+  }
+
+  function onSliderChange() {
+    const n = computeClips(coils, batteries);
+    logTrial(n, batteries, coils);
+  }
+
+  function onPauseClick() {
+    paused = !paused;
+    refs.pauseBtn.textContent = paused ? "Play \u25B6" : "Pause \u23F8";
+    setFlow(!paused);
+  }
+
+  function onResetSetup() {
+    coils = 3;
+    batteries = 1;
+    refs.coilsSlider.value = coils;
+    refs.batteriesSlider.value = batteries;
+    refs.coilsValue.textContent = coils;
+    refs.batteriesValue.textContent = batteries;
+    drawCoil(coils);
+    drawBatteries(batteries);
+    updateLive();
+  }
+
+  function onResetTable() {
+    refs.tableBody.innerHTML = "";
+  }
+
+  function init() {
+    refs.coilsSlider = document.getElementById("coilsSlider");
+    refs.batteriesSlider = document.getElementById("batteriesSlider");
+    refs.coilsValue = document.getElementById("coilsValue");
+    refs.batteriesValue = document.getElementById("batteriesValue");
+    refs.pauseBtn = document.getElementById("pauseBtn");
+    refs.resetSetupBtn = document.getElementById("resetSetupBtn");
+    refs.resetTableBtn = document.getElementById("resetTableBtn");
+    refs.loggerCheckbox = document.getElementById("loggerCheckbox");
+    refs.messageBar = document.getElementById("messageBar");
+    refs.tableBody = document.getElementById("tableBody");
+    refs.coilGroup = document.getElementById("coilGroup");
+    refs.batteryGroup = document.getElementById("batteryGroup");
+    refs.clipGroup = document.getElementById("clipGroup");
+    refs.topStubLeft = document.getElementById("topStubLeft");
+    refs.topStubRight = document.getElementById("topStubRight");
+    refs.flowPath = document.getElementById("flowPath");
+
+    refs.coilsSlider.addEventListener("input", onCoilsInput);
+    refs.batteriesSlider.addEventListener("input", onBatteriesInput);
+    refs.coilsSlider.addEventListener("change", onSliderChange);
+    refs.batteriesSlider.addEventListener("change", onSliderChange);
+    refs.pauseBtn.addEventListener("click", onPauseClick);
+    refs.resetSetupBtn.addEventListener("click", onResetSetup);
+    refs.resetTableBtn.addEventListener("click", onResetTable);
+
+    drawCoil(coils);
+    drawBatteries(batteries);
+    updateLive();
+    setFlow(true);
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>

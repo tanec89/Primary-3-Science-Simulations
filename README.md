@@ -26,6 +26,15 @@ A mystery/quiz game where you use a test magnet to identify three unlabelled bar
 - Once all six ends are tested, a quiz appears asking you to classify each bar as a magnet, magnetic material, or non-magnetic material, with instant feedback and a score.
 - **New shuffle** / **Play again** randomises the three bars' identities and poles for a fresh round.
 
+### Electromagnet Lab (`Magnets/electromagnet_lab.html`)
+
+An interactive circuit diagram exploring how an **electromagnet's** strength depends on the number of coils and batteries.
+
+- Drag the **coils** and **batteries** sliders (1–20 coils, 1–10 batteries) to redraw the circuit live: more coil loops wind around the iron rod, and more battery cells are added to the pack.
+- The number of paper clips attracted (up to 18) updates instantly, with a "current flowing" animation along the wire.
+- **Enable Data Logger** records each trial's coil count, battery count, and clips attracted into a results table, mirroring how a real experiment's readings would be logged.
+- **Pause** stops the current-flow animation; **Reset Setup** returns the sliders to their defaults; **Reset Table** clears the logged trials.
+
 ## Usage
 
 Open any simulation's `.html` file directly in a web browser — no server or build step required.
